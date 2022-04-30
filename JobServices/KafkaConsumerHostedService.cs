@@ -5,6 +5,8 @@ using Microsoft.Extensions.Hosting;
 using Kafka.Public.Loggers;
 using KafkaNet;
 using KafkaNet.Model;
+using System.Text.Json;
+using KafkaApp.Model;
 
 namespace KafkaApp.JobServices
 {
@@ -51,14 +53,16 @@ namespace KafkaApp.JobServices
             _logger = logger;
             var options = new KafkaOptions(uri);
             var brokerRouter = new BrokerRouter(options);
-            _consumer = new Consumer(new ConsumerOptions(topic, brokerRouter));
+            _consumer = new Consumer(new ConsumerOptions(topic, brokerRouter)/* ,new KafkaNet.Protocol.OffsetPosition(0, 115) */);
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
             foreach (var msg in _consumer.Consume())
             {
-                _logger.LogInformation($"Received on my Mac: {Encoding.UTF8.GetString(msg.Value)}");
+                var jsonData = Encoding.UTF8.GetString(msg.Value);
+                var customer = JsonSerializer.Deserialize<CustomerModel>(jsonData);
+                _logger.LogInformation($"Received offset: {msg.Meta.Offset} - msg: {customer.name}");
             }
 
             return Task.CompletedTask;
