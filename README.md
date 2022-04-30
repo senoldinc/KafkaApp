@@ -6,7 +6,7 @@ The main reason to create this repository its a tutorial about to messaging on K
 ```
 docker-compose up
 ```
-## Restore and Run each product 
+## Restore and Run 
 ```
 dotnet restore
 dotnet run
