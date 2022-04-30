@@ -4,6 +4,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using KafkaNet;
 using KafkaNet.Model;
+using System.Text.Json;
+using KafkaApp.Model;
 
 namespace KafkaApp.JobServices
 {
@@ -56,11 +58,18 @@ namespace KafkaApp.JobServices
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 10; i++)
             {
-                var value = $"Hello kafka {i}";
-                _logger.LogInformation(value);
-                KafkaNet.Protocol.Message msg = new KafkaNet.Protocol.Message(value);
+                var value = $"My name is {i.ToString("000")}";
+                var customer = new CustomerModel 
+                {
+                    id = Guid.NewGuid(),
+                    name = value
+                };
+                var payload = JsonSerializer.Serialize(customer);
+                _logger.LogInformation(payload);
+
+                KafkaNet.Protocol.Message msg = new KafkaNet.Protocol.Message(payload);
                 _producer.SendMessageAsync(topic, new List<KafkaNet.Protocol.Message> { msg }).Wait();
             }
 
